@@ -7,7 +7,7 @@ function cleanUp {
 
 function runVDOEstimator {
   sync
-  ./vdoestimator --index test.index ./testDir
+  ./vdoestimator --index test.index $* ./testDir
 }
 
 cleanUp
@@ -56,5 +56,23 @@ else
 fi
 
 cleanUp
-exit 0
+mkdir testDir
+dd if=/dev/urandom of=testDir/file1 bs=4K count=1 status=none
+cp testDir/file1 testDir/file2
+cp testDir/file1 testDir/file3
+cp testDir/file1 testDir/file4
+result=`runVDOEstimator --dedupeOnly`
+if ! echo "$result" | grep -q -e "Total Bytes Used: 4096"; then
+  echo "expected 'Total Bytes Used: 4096'"
+  exit 1
+fi
+if ! echo "$result" | grep -q -e "Total Percent Saved: 75.000%"; then
+  echo "expected 'Total Percent Saved: 75.000%'"
+  exit 1
+fi
 
+echo "dedupeOnly test succeeded"
+
+cleanUp
+
+exit 0

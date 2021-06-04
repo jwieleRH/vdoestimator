@@ -162,11 +162,12 @@ static void chunk_callback(struct udsRequest *request)
   struct query *query = container_of(request, struct query, request);
   // If not found, i. e., a never seen before block, compute its
   // compressability.
-  if (!request->found && !dedupe_only)
-    try_compression(query);
-  else {
-    if(compression_only)
+  if (!request->found) {
+    if (!dedupe_only) {
       try_compression(query);
+    } else {
+      bytes_used += query->data_size;
+    }
   }
   put_query(query);
   return;
