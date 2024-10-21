@@ -16,8 +16,6 @@
 # along with this program; if not, write the Free Software Foundation,
 # Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
-#
-# $Id$
 ##
 
 BUILDROOT = download
@@ -27,8 +25,9 @@ INSTALLDIR = $(DESTDIR)$(bindir)
 INSTALL = install
 INSTALLOWNER ?= -o root -g root
 
-UDS_DIR = $(BUILDROOT)/vdo/utils/uds
-LIBUDS=$(UDS_DIR)/libuds.a
+UDS_DIR = $(BUILDROOT)/vdo-devel/src/c++/uds
+UDS_BUILD_DIR = $(UDS_DIR)/userLinux/build
+LIBUDS = $(UDS_BUILD_DIR)/libuds.a
 LZ4_DIR = $(BUILDROOT)/lz4/lib
 LIBLZ4=$(LZ4_DIR)/liblz4.a
 
@@ -39,9 +38,11 @@ LDFLAGS = $(LDLIBS) -pthread
 
 DEFINES = -D_GNU_SOURCE
 
+INCLUDES = -I$(UDS_DIR)/src/uds -I$(UDS_DIR)/userLinux/uds -I$(LZ4_DIR) 
+
 CDEBUGFLAGS =
 
-CFLAGS += $(DEFINES) -I$(UDS_DIR) -I$(LZ4_DIR) $(CDEBUGFLAGS)
+CFLAGS += $(DEFINES) $(INCLUDES) $(CDEBUGFLAGS)
 
 OBJECTS = vdoestimator.o
 
@@ -49,9 +50,7 @@ SOURCES = $(OBJECTS:%.o=%.c)
 
 PROGS = vdoestimator
 
-SUBPROGS = lz4 uds
-
-all: third $(PROGS)
+all: $(PROGS)
 
 test: all
 	./runTest
@@ -65,20 +64,20 @@ dist-clean: clean
 download:
 	mkdir -p $(BUILDROOT)
 	git clone https://github.com/lz4/lz4 $(BUILDROOT)/lz4
-	git clone https://github.com/dm-vdo/vdo $(BUILDROOT)/vdo
+	git clone https://github.com/dm-vdo/vdo-devel $(BUILDROOT)/vdo-devel
+
+$(OBJECTS): download
 
 install: all
 	$(INSTALL) $(INSTALLOWNER) -m 0755 vdoestimator $(INSTALLDIR)
 
-lz4: download
+$(LIBLZ4): download
 	$(MAKE) -C $(LZ4_DIR)
 
-third: $(SUBPROGS)
-
-uds: download
-	$(MAKE) -C $(UDS_DIR)
+$(LIBUDS): download
+	$(MAKE) -C $(UDS_BUILD_DIR) libuds.a
 
 vdoestimator: $(OBJECTS) $(DEPLIBS)
 	$(CC) -o $@ $(OBJECTS) $(CDEBUGFLAGS) $(LDFLAGS)
 
-.PHONY = install clean
+.PHONY = all test clean dist-clean install

@@ -1,5 +1,6 @@
 vdoestimator
-block.c
 *.o
 *~
 download
+test.index
+testDir
