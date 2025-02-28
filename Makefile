@@ -27,7 +27,9 @@ UDS_DIR = vdo-devel/src/c++/uds
 UDS_BUILD_DIR = $(UDS_DIR)/userLinux/build
 LIBUDS = $(UDS_BUILD_DIR)/libuds.a
 LZ4_DIR = lz4/lib
-LIBLZ4=$(LZ4_DIR)/liblz4.a
+LIBLZ4 = $(LZ4_DIR)/liblz4.a
+
+SUBMODULES = lz4 vdo-devel
 
 DEPLIBS = $(LIBUDS) $(LIBLZ4)
 LDLIBS = $(LIBUDS) -L$(LZ4_DIR) -llz4
@@ -57,9 +59,15 @@ clean:
 	$(RM) $(PROGS) $(OBJECTS)
 
 dist-clean: clean
+	$(RM) -rf $(SUBMODULES)
 
 install: all
 	$(INSTALL) $(INSTALLOWNER) -m 0755 vdoestimator $(INSTALLDIR)
+
+$(SUBMODULES): %: %/.git
+
+%/.git:
+	git submodule init && git submodule update
 
 $(LIBLZ4):
 	$(MAKE) -C $(LZ4_DIR)
@@ -67,7 +75,7 @@ $(LIBLZ4):
 $(LIBUDS):
 	$(MAKE) -C $(UDS_BUILD_DIR) libuds.a
 
-vdoestimator: $(OBJECTS) $(DEPLIBS)
+vdoestimator: $(SUBMODULES) $(OBJECTS) $(DEPLIBS)
 	$(CC) -o $@ $(OBJECTS) $(CDEBUGFLAGS) $(LDFLAGS)
 
 .PHONY = all test clean dist-clean install
