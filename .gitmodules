@@ -1,0 +1,6 @@
+[submodule "lz4"]
+	path = lz4
+	url = https://github.com/lz4/lz4
+[submodule "vdo-devel"]
+	path = vdo-devel
+	url = https://github.com/dm-vdo/vdo-devel

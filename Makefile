@@ -18,17 +18,15 @@
 #
 ##
 
-BUILDROOT = download
-
 bindir ?= /usr/bin
 INSTALLDIR = $(DESTDIR)$(bindir)
 INSTALL = install
 INSTALLOWNER ?= -o root -g root
 
-UDS_DIR = $(BUILDROOT)/vdo-devel/src/c++/uds
+UDS_DIR = vdo-devel/src/c++/uds
 UDS_BUILD_DIR = $(UDS_DIR)/userLinux/build
 LIBUDS = $(UDS_BUILD_DIR)/libuds.a
-LZ4_DIR = $(BUILDROOT)/lz4/lib
+LZ4_DIR = lz4/lib
 LIBLZ4=$(LZ4_DIR)/liblz4.a
 
 DEPLIBS = $(LIBUDS) $(LIBLZ4)
@@ -59,22 +57,14 @@ clean:
 	$(RM) $(PROGS) $(OBJECTS)
 
 dist-clean: clean
-	$(RM) -r $(BUILDROOT)
-
-download:
-	mkdir -p $(BUILDROOT)
-	git clone https://github.com/lz4/lz4 $(BUILDROOT)/lz4
-	git clone https://github.com/dm-vdo/vdo-devel $(BUILDROOT)/vdo-devel
-
-$(OBJECTS): download
 
 install: all
 	$(INSTALL) $(INSTALLOWNER) -m 0755 vdoestimator $(INSTALLDIR)
 
-$(LIBLZ4): download
+$(LIBLZ4):
 	$(MAKE) -C $(LZ4_DIR)
 
-$(LIBUDS): download
+$(LIBUDS):
 	$(MAKE) -C $(UDS_BUILD_DIR) libuds.a
 
 vdoestimator: $(OBJECTS) $(DEPLIBS)
